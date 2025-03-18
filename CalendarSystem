@@ -57,7 +57,9 @@ Calendar.html
     <input type="text" id="event-title"><br><br>
     <label for="event-description">Description:</label>
     <textarea id="event-description"></textarea><br><br>
-    <button id="save-event">Save</button>
+	<label for="event-color">Assigned Color:</label>
+	<input type="color" id="event-color"><br><br>
+    <button id="save-event">Save Entry</button>
     <button id="cancel-event">Cancel</button>
   </div>
 
@@ -68,22 +70,29 @@ const calendarTable = document.getElementById('calendar').getElementsByTagName('
 
 function generateCalendar(month, year) {
     calendarTable.innerHTML = '';
-
+ 
     const firstDay = new Date(year, month);
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     const startingDay = firstDay.getDay();
-
+ 
     let date = 1;
     for (let i = 0; i < 6; i++) {
         const row = calendarTable.insertRow();
         for (let j = 0; j < 7; j++) {
             const cell = row.insertCell();
             if (i === 0 && j < startingDay) {
-                
+                // Empty cell for days before the first of the month
             } else if (date > daysInMonth) {
                 break;
             } else {
                 cell.textContent = date;
+                const currentDate = new Date(year, month, date);
+                const eventForDate = events.find(event => event.date.toDateString() === currentDate.toDateString());
+                if (eventForDate) {
+                    const eventLabel = document.createElement('div');
+                    eventLabel.textContent = eventForDate.title;
+                    cell.appendChild(eventLabel);
+                }
                 if (date === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear()) {
                     cell.classList.add('today');
                 }
@@ -92,20 +101,22 @@ function generateCalendar(month, year) {
         }
     }
 }
-
+ 
+const events = []; // Array to store events
+ 
 function updateCalendar() {
     const currentMonth = parseInt(monthSelect.value);
     const currentYear = parseInt(yearInput.value);
     generateCalendar(currentMonth, currentYear);
 }
-
+ 
 monthSelect.addEventListener('change', updateCalendar);
 yearInput.addEventListener('change', updateCalendar);
-
+ 
 const currentDate = new Date();
 monthSelect.value = currentDate.getMonth();
 yearInput.value = currentDate.getFullYear();
-
+ 
 updateCalendar();
 const eventForm = document.getElementById('event-form');
 const eventDateInput = document.getElementById('event-date');
@@ -113,9 +124,9 @@ const eventTitleInput = document.getElementById('event-title');
 const eventDescriptionInput = document.getElementById('event-description');
 const saveEventButton = document.getElementById('save-event');
 const cancelEventButton = document.getElementById('cancel-event');
-
+ 
 let selectedDate;
-
+ 
 function showEventForm(date) {
     selectedDate = date;
     eventDateInput.value = formatDate(date);
@@ -123,18 +134,18 @@ function showEventForm(date) {
     eventDescriptionInput.value = '';
     eventForm.style.display = 'block';
 }
-
+ 
 function hideEventForm() {
     eventForm.style.display = 'none';
 }
-
+ 
 function formatDate(date) {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
 }
-
+ 
 calendarTable.addEventListener('click', function(event) {
     if (event.target.tagName === 'TD' && event.target.textContent !== '') {
         const day = parseInt(event.target.textContent);
@@ -142,28 +153,30 @@ calendarTable.addEventListener('click', function(event) {
         showEventForm(date);
     }
 });
-
+ 
 saveEventButton.addEventListener('click', function() {
-   
     const eventData = {
         date: selectedDate,
         title: eventTitleInput.value,
-        description: eventDescriptionInput.value
+        description: eventDescriptionInput.value,
+		color: document.getElementById("eventColor").value
     };
+    events.push(eventData); // Save event to the events array
     console.log('Event saved:', eventData);
     hideEventForm();
+    updateCalendar(); // Refresh the calendar to display the new event
 });
-
+ 
 cancelEventButton.addEventListener('click', function() {
     hideEventForm();
 });
 
     cancelEventButton.addEventListener("click", closeEventForm);
     generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+
   </script>
 </body>
 </html>
-
 
 ----------------------------------------------------------------
 login.html
@@ -176,9 +189,63 @@ login.html
   <title>Login</title>
   <link rel="stylesheet" href="style.css">
   <script type="text/javascript" src="validation.js" defer></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #ffc0cb;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .loginForm {
+      background: grey;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 300px;
+    }
+    h1 {
+      text-align: center;
+      color: #cc3366;
+    }
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ff69b4;
+      border-radius: 4px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #ffc0cb;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #ffc0cb;
+    }
+    #error-message {
+      color: red;
+      text-align: center;
+      margin: 10px 0;
+    }
+	#success-message {
+		color:green;
+		text-align: center;
+		margin: 10px 0;
+    p {
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
-  <div class="wrapper">
+  <div class="loginForm">
     <h1>Login</h1>
     <p id="error-message"></p>
     <form id="form">
@@ -225,7 +292,7 @@ login.html
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
-	</script>
+</script>
 </body>
 </html>
 
@@ -240,8 +307,79 @@ signup.html
   <title>Signup</title>
   <link rel="stylesheet" href="style.css">
   <script type="text/javascript" src="validation.js" defer></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #ffc0cb;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+ 
+    .registrationForm {
+      background: grey;
+      padding: 30px;
+      border-radius: 20px;
+      width: 300px;
+    }
+ 
+    h1 {
+      text-align: center;
+      color: #cc3366;
+    }
+ 
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ff69b4;
+      border-radius: 4px;
+    }
+ 
+    button {
+      width: 100%;
+      padding: 20px;
+      background-color: #ffc0cb;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+ 
+    button:hover {
+      background-color: #ffc0cb;
+    }
+ 
+    #error-message {
+      color: red;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+	#success-message {
+		color:green;
+		text-align: center;
+		margin: 10px 0;
+	}
+    p {
+      text-align: center;
+    }
+ 
+    a {
+      color: #fc0fc0;
+      text-decoration: none;
+    }
+ 
+    a:hover {
+      text-decoration: underline;
+    }
+</style>
 </head>
-<body>
+	<body>
   <div class="registrationForm">
     <h1>Signup</h1>
     <p id="error-message"></p>
@@ -260,7 +398,8 @@ signup.html
       </div>
       <button type="submit">Signup</button>
     </form>
-    <p>Already have an Account? <a href="login.html">login</a> </p>
+	<p id="success-message" style="color: green;"></p>
+    <p>Already have an Account? <a href="login.html">Login</a> </p>
   </div>
   <script>
   document.addEventListener('DOMContentLoaded', function() {
@@ -270,16 +409,18 @@ signup.html
     const passwordInput = document.getElementById('password-input');
     const repeatPasswordInput = document.getElementById('repeat-password-input');
     const errorMessage = document.getElementById('error-message');
-
+	const successMessage = document.getElementById('success-message');
+	
     form.addEventListener('submit', function(e) {
         let isValid = true;
         errorMessage.textContent = '';
-
+		successMessage.textContent = '';
+		
         if (firstNameInput.value.trim() === '') {
             displayError('Please enter your first name.');
             isValid = false;
         }
-
+ 
         if (emailInput.value.trim() === '') {
             displayError('Please enter your email.');
             isValid = false;
@@ -287,12 +428,12 @@ signup.html
             displayError('Please enter a valid email address.');
             isValid = false;
         }
-
+ 
         if (passwordInput.value.trim() === '') {
             displayError('Please enter your password.');
             isValid = false;
         }
-
+ 
         if (repeatPasswordInput.value.trim() === '') {
             displayError('Please repeat your password.');
             isValid = false;
@@ -300,21 +441,35 @@ signup.html
             displayError('Passwords do not match.');
             isValid = false;
         }
-
-        if (!isValid) {
+ 
+        if (isValid) {
+            saveRegistrationData({
+                firstname: firstNameInput.value.trim(),
+                email: emailInput.value.trim(),
+                password: passwordInput.value.trim()
+            });
+            successMessage.textContent = 'Registration successful! You can now log in.';
+			 setTimeout(() => {
+            successMessage.textContent = ''; 
+			}, 5000);
+        } else {
             e.preventDefault();
         }
     });
-
+ 
     function displayError(message) {
         errorMessage.textContent = message;
     }
-
+ 
     function isValidEmail(email) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
     }
-});
-</script>
-</body>
-</html>
+ 
+    function saveRegistrationData(data) {
+        console.log('Registration data saved:', data);
+    }
+  });
+  </script>
+  </body>
+  </html>
